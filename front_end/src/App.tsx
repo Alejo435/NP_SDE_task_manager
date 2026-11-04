@@ -1,13 +1,18 @@
+import { useState } from 'react'
 import { Toaster } from 'sonner'
 import { useAuth } from './hooks/useAuth'
 import { useTasks } from './hooks/useTasks'
 import Sidebar from './components/Sidebar'
 import Board from './components/Board'
 import ErrorState from './components/Error'
+import TaskPanel from './components/TaskPanel'
 
 export default function App() {
   const { user, error: authError, retry } = useAuth()
-  const { tasks, loading, error, reload, createTask, updateTask } = useTasks(user !== null)
+  const { tasks, loading, error, reload, createTask, updateTask, deleteTask, nextPosition } = useTasks(user !== null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const selected = tasks.find(t => t.id === selectedId) ?? null
 
   return (
     <div className="flex h-screen">
@@ -23,9 +28,27 @@ export default function App() {
             onRetry={reload}
             onCreate={createTask}
             onMove={updateTask}
+            onOpen={setSelectedId}
           />
         )}
       </main>
+
+      {selected && (
+        <TaskPanel
+          key={selected.id}
+          task={selected}
+          onClose={() => setSelectedId(null)}
+          onUpdate={patch => updateTask(selected.id, patch)}
+          onStatusChange={status => {
+            if (status !== selected.status) updateTask(selected.id, { status, position: nextPosition(status) })
+          }}
+          onDelete={() => {
+            deleteTask(selected.id)
+            setSelectedId(null)
+          }}
+        />
+      )}
+
       <Toaster
         theme="dark"
         position="bottom-right"

@@ -12,8 +12,18 @@
   --color-danger: #E2574C;
   --color-sage: #86B38A;
   --font-sans: "Manrope", system-ui, sans-serif;
+
+  --animate-slide-in: slide-in 200ms ease-out;
+  @keyframes slide-in {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
 }
 
 body {
   @apply bg-ink text-paper font-sans antialiased;
+}
+
+:root {
+  color-scheme: dark;
 }

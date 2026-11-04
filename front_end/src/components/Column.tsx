@@ -16,6 +16,7 @@ interface Props {
   loading: boolean;
   highlighted: boolean;
   onAdd: (title: string) => void;
+  onOpen: (id: string) => void;
 }
 
 export default function Column({
@@ -24,6 +25,7 @@ export default function Column({
   loading,
   highlighted,
   onAdd,
+  onOpen,
 }: Props) {
   const { setNodeRef } = useDroppable({ id: column.id });
 
@@ -58,7 +60,11 @@ export default function Column({
               strategy={verticalListSortingStrategy}
             >
               {tasks.map((t) => (
-                <SortableTaskCard key={t.id} task={t} />
+                <SortableTaskCard
+                  key={t.id}
+                  task={t}
+                  onOpen={() => onOpen(t.id)}
+                />
               ))}
             </SortableContext>
             {tasks.length === 0 && !highlighted && (

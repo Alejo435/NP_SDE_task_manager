@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import type { Status, Task } from '../types'
 
 // subset of a tasks fields except id and created at as those never change
-type TaskPatch = Partial<Omit<Task, 'id' | 'created_at'>>
+export type TaskPatch = Partial<Omit<Task, 'id' | 'created_at'>>
 
 export function useTasks(enabled: boolean) {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -22,12 +22,16 @@ export function useTasks(enabled: boolean) {
   }, [])
 
   useEffect(() => { if (enabled) reload() }, [enabled, reload])
+  
+  const nextPosition = (status: Status) => {
+    const column = tasks.filter(t => t.status === status)
+    return column.length ? Math.max(...column.map(t => t.position)) + 1000 : 1000
+  }
 
   // places new task at bottom of column. its client id is generated here randomly
   // client generated UUID will never repeat itself, odds are 1 in a billion
   const createTask = async (title: string, status: Status) => {
-    const column = tasks.filter(t => t.status === status)
-    const position = column.length ? Math.max(...column.map(t => t.position)) + 1000 : 1000
+    const position = nextPosition(status)
     const task: Task = {
       id: crypto.randomUUID(), title, status, position,
       description: null, priority: 'normal', due_date: null, tags: [],
@@ -63,5 +67,5 @@ export function useTasks(enabled: boolean) {
     }
   }
 
-  return { tasks, loading, error, reload, createTask, updateTask, deleteTask }
+  return { tasks, loading, error, reload, createTask, updateTask, deleteTask, nextPosition }
 }

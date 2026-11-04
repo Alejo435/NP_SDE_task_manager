@@ -29,6 +29,7 @@ interface Props {
   onRetry: () => void;
   onCreate: (title: string, status: Status) => void;
   onMove: (id: string, patch: { status: Status; position: number }) => void;
+  onOpen: (id: string) => void;
 }
 
 export default function Board({
@@ -38,8 +39,8 @@ export default function Board({
   onRetry,
   onCreate,
   onMove,
+  onOpen,
 }: Props) {
-    
   // these 2 consts track which task is being dragged and over which column it is
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overColumn, setOverColumn] = useState<Status | null>(null);
@@ -52,6 +53,7 @@ export default function Board({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
+      keyboardCodes: { start: ["Space"], cancel: ["Escape"], end: ["Space"] },
     }),
   );
 
@@ -149,6 +151,7 @@ export default function Board({
             loading={loading}
             highlighted={overColumn === col.id && activeTask?.status !== col.id}
             onAdd={(title) => onCreate(title, col.id)}
+            onOpen={onOpen}
           />
         ))}
       </div>
