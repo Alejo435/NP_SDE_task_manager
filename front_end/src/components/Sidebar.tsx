@@ -13,5 +13,5 @@ export default function Sidebar() {
         <p className="text-sm text-muted">TODO: Include list of members</p>
       </section>
     </aside>
-  )
+  );
 }
