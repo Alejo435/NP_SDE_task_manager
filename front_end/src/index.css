@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ink: #040403;
+  --color-surface: #0F100E;
+  --color-raised: #181915;
+  --color-line: #2A2B26;
+  --color-paper: #EDE7DC;
+  --color-muted: #9A958A;
+  --color-sand: #F3C178;
+  --color-teal: #3587A4;
+  --color-danger: #E2574C;
+  --color-sage: #86B38A;
+  --font-sans: "Manrope", system-ui, sans-serif;
+}
+
+body {
+  @apply bg-ink text-paper font-sans antialiased;
+}
