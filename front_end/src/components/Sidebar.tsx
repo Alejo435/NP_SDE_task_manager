@@ -1,9 +1,10 @@
 import { isOverdue } from "../lib/dates";
 import type { Task } from "../types";
 import { useTeamContext } from "../context/TeamContext";
-import { useTagColors } from '../context/TagColorsContext'
+import { useTagColors } from "../context/TagColorsContext";
 import Avatar from "./Avatar";
 import QuickAdd from "./QuickAdd";
+import { X } from "lucide-react";
 
 interface Props {
   tasks: Task[];
@@ -11,6 +12,8 @@ interface Props {
   tags: { name: string; count: number }[];
   activeTag: string | null;
   onSelectTag: (tag: string | null) => void;
+  open: boolean;
+  onClose: () => void;
 }
 
 export default function Sidebar({
@@ -19,8 +22,10 @@ export default function Sidebar({
   tags,
   activeTag,
   onSelectTag,
+  open,
+  onClose,
 }: Props) {
-  const tagColor = useTagColors()
+  const tagColor = useTagColors();
   const { members, loading: teamLoading, addMember } = useTeamContext();
   const total = tasks.length;
   const done = tasks.filter((t) => t.status === "done").length;
@@ -29,8 +34,21 @@ export default function Sidebar({
   const percent = total ? Math.round((done / total) * 100) : 0;
 
   return (
-    <aside className="hidden md:flex w-60 shrink-0 flex-col gap-8 overflow-y-auto border-r border-line bg-surface p-5">
-      <h1 className="text-lg font-bold tracking-tight">Team Manager Demo</h1>
+    <>
+      {open && <div className="fixed inset-0 z-30 bg-black/60 md:hidden" onClick={onClose} />}
+      <aside
+        className={`${open ? 'flex' : 'hidden'} fixed inset-y-0 left-0 z-40 w-72 shrink-0 flex-col gap-8 overflow-y-auto border-r border-line bg-surface p-5 md:static md:z-auto md:flex md:w-60`}
+      >
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold tracking-tight">Team Manager Demo</h1>
+          <button
+            onClick={onClose}
+            aria-label="Close menu"
+            className="rounded-lg p-1.5 text-muted hover:bg-raised hover:text-paper md:hidden"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-muted">Overview</h2>
@@ -153,6 +171,7 @@ export default function Sidebar({
           </ul>
         </section>
       )}
-    </aside>
+         </aside>
+    </>
   );
 }

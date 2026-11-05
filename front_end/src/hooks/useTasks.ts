@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabase'
 import type { Status, Task } from '../types'
+import { buildSampleTasks } from '../lib/sampleTasks'
 
 // subset of a tasks fields except id and created at as those never change
 export type TaskPatch = Partial<Omit<Task, 'id' | 'created_at'>>
@@ -67,5 +68,17 @@ export function useTasks(enabled: boolean) {
     }
   }
 
-  return { tasks, loading, error, reload, createTask, updateTask, deleteTask, nextPosition }
+  const addSampleTasks = async () => {
+    const rows = buildSampleTasks()
+    const now = new Date().toISOString()
+    setTasks(prev => [...prev, ...rows.map(r => ({ ...r, description: null, created_at: now }))])
+    const { error } = await supabase.from('tasks').insert(rows)
+    if (error) {
+      const ids = new Set(rows.map(r => r.id))
+      setTasks(prev => prev.filter(t => !ids.has(t.id)))
+      toast.error(`Sample tasks weren't added: ${error.message}`)
+    }
+  }
+
+  return { tasks, loading, error, reload, createTask, updateTask, deleteTask, nextPosition, addSampleTasks }
 }

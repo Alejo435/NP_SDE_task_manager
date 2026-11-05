@@ -142,7 +142,7 @@ export default function Board({
       onDragEnd={handleDragEnd}
       onDragCancel={reset}
     >
-      <div className="flex h-full snap-x gap-4 overflow-x-auto p-6">
+            <div className="flex h-full snap-x gap-3 overflow-x-auto p-4 md:gap-4 md:p-6">
         {COLUMNS.map((col) => (
           <Column
             key={col.id}

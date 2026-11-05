@@ -32,7 +32,7 @@ export default function Column({
   // column itself
   return (
     <section
-      className={`group flex max-h-full w-72 shrink-0 snap-start flex-col rounded-xl border bg-surface transition-colors ${
+      className={`group flex max-h-full w-[85vw] max-w-72 md:w-72 shrink-0 snap-start flex-col rounded-xl border bg-surface transition-colors ${
         highlighted ? "border-teal" : "border-line"
       }`}
     >

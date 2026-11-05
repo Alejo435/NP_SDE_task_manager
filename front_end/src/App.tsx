@@ -10,6 +10,7 @@ import { TeamProvider } from "./context/TeamContext";
 import Tag from "./components/Tag";
 import { buildTagColors } from "./lib/tags";
 import { TagColorsProvider } from "./context/TagColorsContext";
+import { Menu } from "lucide-react";
 
 export default function App() {
   const { user, error: authError, retry } = useAuth();
@@ -22,10 +23,14 @@ export default function App() {
     updateTask,
     deleteTask,
     nextPosition,
+    addSampleTasks
   } = useTasks(user !== null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const boardLoading = !user || loading;
+  const doneCount = tasks.filter((t) => t.status === "done").length;
 
   const tagCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -51,12 +56,48 @@ export default function App() {
         <div className="flex h-screen">
           <Sidebar
             tasks={tasks}
-            loading={!user || loading}
+            loading={boardLoading}
             tags={tagCounts}
             activeTag={filterTag}
-            onSelectTag={setActiveTag}
+            onSelectTag={(tag) => {
+              setActiveTag(tag);
+              setMenuOpen(false);
+            }}
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
           />
           <main className="flex flex-1 flex-col overflow-hidden">
+            <header className="flex items-center gap-3 border-b border-line px-4 py-3 md:hidden">
+              <button
+                onClick={() => setMenuOpen(true)}
+                aria-label="Open menu"
+                className="rounded-lg p-1.5 text-muted hover:bg-raised hover:text-paper"
+              >
+                <Menu size={20} />
+              </button>
+              <span className="font-bold">Team Manager Demo</span>
+              {!boardLoading && tasks.length > 0 && (
+                <span className="ml-auto text-sm text-muted">
+                  <span className="font-semibold text-sand">{doneCount}</span>{" "}
+                  of {tasks.length} done
+                </span>
+              )}
+            </header>
+
+            {!boardLoading && !error && tasks.length === 0 && (
+              <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 text-sm text-muted md:px-6">
+                <span>
+                  Your board is empty. Add a task to any column, or load a few
+                  examples to explore.
+                </span>
+                <button
+                  onClick={addSampleTasks}
+                  className="rounded-lg bg-teal px-3 py-1.5 font-semibold text-ink hover:brightness-110"
+                >
+                  Load sample tasks
+                </button>
+              </div>
+            )}
             {filterTag && (
               <div className="flex items-center gap-2 border-b border-line px-6 py-2.5 text-sm text-muted">
                 Showing tasks tagged <Tag name={filterTag} />

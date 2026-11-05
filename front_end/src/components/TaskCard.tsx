@@ -39,7 +39,11 @@ export default function TaskCard({
           : "cursor-grab border-line hover:border-muted/60"
       }`}
     >
-      <p className="text-sm font-medium leading-snug">{task.title}</p>
+      <p
+        className={`text-sm font-medium leading-snug ${task.status === "done" ? "text-muted" : ""}`}
+      >
+        {task.title}
+      </p>
 
       {task.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
