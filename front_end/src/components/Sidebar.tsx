@@ -1,64 +1,53 @@
-import { isOverdue } from '../lib/dates'
-import type { Task } from '../types'
+import { isOverdue } from "../lib/dates";
+import type { Task } from "../types";
+import { useTeamContext } from "../context/TeamContext";
+import Avatar from "./Avatar";
+import QuickAdd from "./QuickAdd";
 
 interface Props {
-  tasks: Task[]
-  loading: boolean
+  tasks: Task[];
+  loading: boolean;
 }
 
 export default function Sidebar({ tasks, loading }: Props) {
-  const total = tasks.length
-  const done = tasks.filter(t => t.status === 'done').length
-  const inProgress = tasks.filter(t => t.status === 'in_progress').length
-  const overdue = tasks.filter(isOverdue).length
-  const percent = total ? Math.round((done / total) * 100) : 0
+  const { members, loading: teamLoading, addMember } = useTeamContext();
+  const total = tasks.length;
+  const done = tasks.filter((t) => t.status === "done").length;
+  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
+  const overdue = tasks.filter(isOverdue).length;
+  const percent = total ? Math.round((done / total) * 100) : 0;
 
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col gap-8 border-r border-line bg-surface p-5">
       <h1 className="text-lg font-bold tracking-tight">Your board name</h1>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted">Overview</h2>
-
-        {loading ? (
+        <h2 className="text-sm font-semibold text-muted">Team</h2>
+        {teamLoading ? (
           <div className="space-y-2">
-            <div className="h-4 w-24 rounded bg-raised motion-safe:animate-pulse" />
-            <div className="h-1.5 rounded-full bg-raised motion-safe:animate-pulse" />
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-6 rounded bg-raised motion-safe:animate-pulse"
+              />
+            ))}
           </div>
-        ) : total === 0 ? (
-          <p className="text-sm text-muted">No tasks yet</p>
         ) : (
-          <>
-            <p className="text-sm">
-              <span className="font-bold text-sand">{done}</span> of {total} done
-            </p>
-            <div
-              role="progressbar"
-              aria-valuenow={percent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label="Tasks completed"
-              className="h-1.5 overflow-hidden rounded-full bg-raised"
-            >
-              <div className="h-full rounded-full bg-sand transition-[width] duration-300" style={{ width: `${percent}%` }} />
-            </div>
-
-            <dl className="space-y-1.5 pt-1 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted">Open</dt>
-                <dd className="font-semibold">{total - done}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">In progress</dt>
-                <dd className="font-semibold">{inProgress}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">Overdue</dt>
-                <dd className={`font-semibold ${overdue > 0 ? 'text-danger' : ''}`}>{overdue}</dd>
-              </div>
-            </dl>
-          </>
+          <ul className="space-y-2">
+            {members.map((m) => (
+              <li key={m.id} className="flex items-center gap-2.5 text-sm">
+                <Avatar member={m} />
+                <span className="truncate">{m.name}</span>
+              </li>
+            ))}
+          </ul>
         )}
+        <QuickAdd
+          onAdd={addMember}
+          label="Add member"
+          placeholder="Name"
+          maxLength={50}
+        />
       </section>
 
       <section className="space-y-3">
@@ -66,5 +55,5 @@ export default function Sidebar({ tasks, loading }: Props) {
         <p className="text-sm text-muted">Team members appear here</p>
       </section>
     </aside>
-  )
+  );
 }

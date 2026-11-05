@@ -8,7 +8,7 @@ import {
 import type { ColumnDef } from "../lib/columns";
 import type { Task } from "../types";
 import SortableTaskCard from "./SortableTaskCard";
-import AddTask from "./AddTask";
+import QuickAdd from "./QuickAdd";
 
 interface Props {
   column: ColumnDef;
@@ -73,7 +73,12 @@ export default function Column({
               </p>
             )}
             {/* quick add button that appears at bottom */}
-            <AddTask onAdd={onAdd} />
+            <QuickAdd
+              onAdd={onAdd}
+              label="Add task"
+              placeholder="Task title"
+              maxLength={200}
+            />
           </>
         )}
       </div>

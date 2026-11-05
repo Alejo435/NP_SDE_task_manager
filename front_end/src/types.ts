@@ -14,3 +14,9 @@ export interface Task {
   position: number
   created_at: string
 }
+
+export interface Member {
+  id: string
+  name: string
+  color: string
+}

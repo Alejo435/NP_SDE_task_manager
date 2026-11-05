@@ -3,6 +3,8 @@ import { Trash2, X } from 'lucide-react'
 import { COLUMNS } from '../lib/columns'
 import type { TaskPatch } from '../hooks/useTasks'
 import type { Priority, Status, Task } from '../types'
+import { useTeamContext } from '../context/TeamContext'
+import Avatar from './Avatar'
 
 interface Props {
   task: Task
@@ -24,6 +26,8 @@ export default function TaskPanel({ task, onClose, onUpdate, onStatusChange, onD
   const [title, setTitle] = useState(task.title)
   const [description, setDescription] = useState(task.description ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
+const { members, assignments, toggleAssignee } = useTeamContext()
+  const assigned = assignments[task.id] ?? []
 
   const saveTitle = () => {
     const t = title.trim()
@@ -117,6 +121,29 @@ export default function TaskPanel({ task, onClose, onUpdate, onStatusChange, onD
             className={inputClass}
           />
         </Field>
+
+                <Field label="Assignees">
+          <div className="flex flex-wrap gap-2">
+            {members.map(m => {
+              const on = assigned.includes(m.id)
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => toggleAssignee(task.id, m.id)}
+                  aria-pressed={on}
+                  className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition ${
+                    on ? 'border-teal bg-teal/15 text-paper' : 'border-line text-muted hover:text-paper'
+                  }`}
+                >
+                  <Avatar member={m} />
+                  {m.name.split(' ')[0]}
+                </button>
+              )
+            })}
+          </div>
+        </Field>
+
+        {/* Tags are added here in the next block */}
 
         <Field label="Description">
           <textarea
