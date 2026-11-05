@@ -3,6 +3,7 @@ import { dueInfo, type DueTone } from "../lib/dates";
 import type { Task } from "../types";
 import { useTeamContext } from "../context/TeamContext";
 import Avatar from "./Avatar";
+import Tag from "./Tag";
 
 const PRIORITY = {
   high: { label: "High priority", className: "text-sand" },
@@ -39,6 +40,19 @@ export default function TaskCard({
       }`}
     >
       <p className="text-sm font-medium leading-snug">{task.title}</p>
+
+      {task.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {task.tags.slice(0, 3).map((t) => (
+            <Tag key={t} name={t} />
+          ))}
+          {task.tags.length > 3 && (
+            <span className="px-1 text-xs text-muted">
+              +{task.tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
 
       {(priority || due || assignees.length > 0) && (
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">

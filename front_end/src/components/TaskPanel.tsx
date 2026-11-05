@@ -1,57 +1,87 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { Trash2, X } from 'lucide-react'
-import { COLUMNS } from '../lib/columns'
-import type { TaskPatch } from '../hooks/useTasks'
-import type { Priority, Status, Task } from '../types'
-import { useTeamContext } from '../context/TeamContext'
-import Avatar from './Avatar'
+import { useEffect, useState, type ReactNode } from "react";
+import { Trash2, X } from "lucide-react";
+import { COLUMNS } from "../lib/columns";
+import type { TaskPatch } from "../hooks/useTasks";
+import type { Priority, Status, Task } from "../types";
+import { useTeamContext } from "../context/TeamContext";
+import Avatar from "./Avatar";
+import { MAX_TAGS, MAX_TAG_LENGTH } from "../lib/tags";
+import Tag from "./Tag";
 
 interface Props {
-  task: Task
-  onClose: () => void
-  onUpdate: (patch: TaskPatch) => void
-  onStatusChange: (status: Status) => void
-  onDelete: () => void
+  task: Task;
+  onClose: () => void;
+  onUpdate: (patch: TaskPatch) => void;
+  onStatusChange: (status: Status) => void;
+  onDelete: () => void;
+  allTags: string[];
 }
 
 const PRIORITIES: { id: Priority; label: string }[] = [
-  { id: 'low', label: 'Low' },
-  { id: 'normal', label: 'Normal' },
-  { id: 'high', label: 'High' },
-]
+  { id: "low", label: "Low" },
+  { id: "normal", label: "Normal" },
+  { id: "high", label: "High" },
+];
 
-const inputClass = 'w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-teal'
+const inputClass =
+  "w-full rounded-lg border border-line bg-ink px-3 py-2 text-sm outline-none focus:border-teal";
 
-export default function TaskPanel({ task, onClose, onUpdate, onStatusChange, onDelete }: Props) {
-  const [title, setTitle] = useState(task.title)
-  const [description, setDescription] = useState(task.description ?? '')
-  const [confirmDelete, setConfirmDelete] = useState(false)
-const { members, assignments, toggleAssignee } = useTeamContext()
-  const assigned = assignments[task.id] ?? []
+export default function TaskPanel({
+  task,
+  onClose,
+  onUpdate,
+  onStatusChange,
+  onDelete,
+  allTags,
+}: Props) {
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description ?? "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const { members, assignments, toggleAssignee } = useTeamContext();
+  const assigned = assignments[task.id] ?? [];
+
+  const [tagInput, setTagInput] = useState("");
+
+  const hasTag = (tag: string) =>
+    task.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
+
+  const addTag = (raw: string) => {
+    const tag = raw.trim().slice(0, MAX_TAG_LENGTH);
+    setTagInput("");
+    if (!tag || hasTag(tag) || task.tags.length >= MAX_TAGS) return;
+    onUpdate({ tags: [...task.tags, tag] });
+  };
+
+  const removeTag = (tag: string) =>
+    onUpdate({ tags: task.tags.filter((t) => t !== tag) });
+
+  const suggestions = allTags.filter((t) => !hasTag(t)).slice(0, 8);
 
   const saveTitle = () => {
-    const t = title.trim()
-    if (!t) return setTitle(task.title) 
-    if (t !== task.title) onUpdate({ title: t })
-  }
+    const t = title.trim();
+    if (!t) return setTitle(task.title);
+    if (t !== task.title) onUpdate({ title: t });
+  };
 
   const saveDescription = () => {
-    const d = description.trim()
-    if (d !== (task.description ?? '')) onUpdate({ description: d || null })
-  }
+    const d = description.trim();
+    if (d !== (task.description ?? "")) onUpdate({ description: d || null });
+  };
 
   // save unsaved text before closing
   const close = () => {
-    saveTitle()
-    saveDescription()
-    onClose()
-  }
+    saveTitle();
+    saveDescription();
+    onClose();
+  };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close() }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  })
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
@@ -69,17 +99,21 @@ const { members, assignments, toggleAssignee } = useTeamContext()
             value={title}
             rows={2}
             maxLength={200}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             onBlur={saveTitle}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                e.currentTarget.blur()
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.currentTarget.blur();
               }
             }}
             className="flex-1 resize-none bg-transparent text-xl font-bold leading-snug outline-none"
           />
-          <button onClick={close} aria-label="Close" className="rounded-lg p-1.5 text-muted hover:bg-raised hover:text-paper">
+          <button
+            onClick={close}
+            aria-label="Close"
+            className="rounded-lg p-1.5 text-muted hover:bg-raised hover:text-paper"
+          >
             <X size={18} />
           </button>
         </div>
@@ -88,22 +122,28 @@ const { members, assignments, toggleAssignee } = useTeamContext()
           <select
             aria-label="Status"
             value={task.status}
-            onChange={e => onStatusChange(e.target.value as Status)}
+            onChange={(e) => onStatusChange(e.target.value as Status)}
             className={inputClass}
           >
-            {COLUMNS.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+            {COLUMNS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
           </select>
         </Field>
 
         <Field label="Priority">
           <div className="flex gap-1 rounded-lg border border-line bg-ink p-1">
-            {PRIORITIES.map(p => (
+            {PRIORITIES.map((p) => (
               <button
                 key={p.id}
                 onClick={() => onUpdate({ priority: p.id })}
                 aria-pressed={task.priority === p.id}
                 className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${
-                  task.priority === p.id ? 'bg-teal text-ink' : 'text-muted hover:text-paper'
+                  task.priority === p.id
+                    ? "bg-teal text-ink"
+                    : "text-muted hover:text-paper"
                 }`}
               >
                 {p.label}
@@ -116,34 +156,73 @@ const { members, assignments, toggleAssignee } = useTeamContext()
           <input
             type="date"
             aria-label="Due date"
-            value={task.due_date ?? ''}
-            onChange={e => onUpdate({ due_date: e.target.value || null })}
+            value={task.due_date ?? ""}
+            onChange={(e) => onUpdate({ due_date: e.target.value || null })}
             className={inputClass}
           />
         </Field>
 
-                <Field label="Assignees">
+        <Field label="Assignees">
           <div className="flex flex-wrap gap-2">
-            {members.map(m => {
-              const on = assigned.includes(m.id)
+            {members.map((m) => {
+              const on = assigned.includes(m.id);
               return (
                 <button
                   key={m.id}
                   onClick={() => toggleAssignee(task.id, m.id)}
                   aria-pressed={on}
                   className={`flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition ${
-                    on ? 'border-teal bg-teal/15 text-paper' : 'border-line text-muted hover:text-paper'
+                    on
+                      ? "border-teal bg-teal/15 text-paper"
+                      : "border-line text-muted hover:text-paper"
                   }`}
                 >
                   <Avatar member={m} />
-                  {m.name.split(' ')[0]}
+                  {m.name.split(" ")[0]}
                 </button>
-              )
+              );
             })}
           </div>
         </Field>
 
-        {/* Tags are added here in the next block */}
+        <Field label="Tags">
+          {task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {task.tags.map((t) => (
+                <Tag key={t} name={t} onRemove={() => removeTag(t)} />
+              ))}
+            </div>
+          )}
+          {task.tags.length < MAX_TAGS && (
+            <input
+              aria-label="Add tag"
+              value={tagInput}
+              maxLength={MAX_TAG_LENGTH}
+              placeholder="Add a tag and press Enter"
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTag(tagInput);
+                }
+              }}
+              className={inputClass}
+            />
+          )}
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {suggestions.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => addTag(t)}
+                  className="rounded border border-dashed border-line px-1.5 py-0.5 text-xs text-muted hover:border-muted hover:text-paper"
+                >
+                  + {t}
+                </button>
+              ))}
+            </div>
+          )}
+        </Field>
 
         <Field label="Description">
           <textarea
@@ -151,35 +230,44 @@ const { members, assignments, toggleAssignee } = useTeamContext()
             value={description}
             rows={6}
             placeholder="Add details, links, or acceptance criteria"
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             onBlur={saveDescription}
             className={`${inputClass} resize-y`}
           />
         </Field>
 
-
         <div className="mt-auto border-t border-line pt-4">
           {confirmDelete ? (
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-sm text-muted">Delete this task permanently?</span>
-              <button onClick={() => setConfirmDelete(false)} className="rounded-lg px-3 py-1.5 text-sm text-muted hover:text-paper">
+              <span className="flex-1 text-sm text-muted">
+                Delete this task permanently?
+              </span>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-lg px-3 py-1.5 text-sm text-muted hover:text-paper"
+              >
                 Cancel
               </button>
-              <button onClick={onDelete} className="rounded-lg bg-danger px-3 py-1.5 text-sm font-semibold text-ink">
+              <button
+                onClick={onDelete}
+                className="rounded-lg bg-danger px-3 py-1.5 text-sm font-semibold text-ink"
+              >
                 Delete
               </button>
             </div>
           ) : (
-            <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-2 text-sm text-muted hover:text-danger">
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-2 text-sm text-muted hover:text-danger"
+            >
               <Trash2 size={16} /> Delete task
             </button>
           )}
         </div>
       </aside>
     </div>
-  )
+  );
 }
-
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -187,5 +275,5 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       <span className="text-sm font-semibold text-muted">{label}</span>
       {children}
     </div>
-  )
+  );
 }

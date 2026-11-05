@@ -30,15 +30,15 @@ export function useTasks(enabled: boolean) {
 
   // places new task at bottom of column. its client id is generated here randomly
   // client generated UUID will never repeat itself, odds are 1 in a billion
-  const createTask = async (title: string, status: Status) => {
+  const createTask = async (title: string, status: Status, tags: string[] = []) => {
     const position = nextPosition(status)
     const task: Task = {
       id: crypto.randomUUID(), title, status, position,
-      description: null, priority: 'normal', due_date: null, tags: [],
+      description: null, priority: 'normal', due_date: null, tags,
       created_at: new Date().toISOString(),
     }
     setTasks(prev => [...prev, task])
-    const { error } = await supabase.from('tasks').insert({ id: task.id, title, status, position })
+    const { error } = await supabase.from('tasks').insert({ id: task.id, title, status, position, tags })
     if (error) {
       setTasks(prev => prev.filter(t => t.id !== task.id))
       toast.error(`Task wasn't saved: ${error.message}`)
